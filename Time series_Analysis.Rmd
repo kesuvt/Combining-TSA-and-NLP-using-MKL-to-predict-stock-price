@@ -18,8 +18,9 @@ library(forecast)
 
 Reading, exploring and cleaning the stock price data
 ```{r}
+Link to the dataset: https://drive.google.com/file/d/1ff5_9aqcmJ6RItGcRjbjwqO7FOnoJ77-/view?usp=drive_link
 # Reading the data
-bajaj_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/BAJAJ-AUTO.NS.csv")
+bajaj_data <- read.csv(".../BAJAJ-AUTO.NS.csv")
 # Exploring and understandign the data
 dim(bajaj_data)
 str(bajaj_data)
