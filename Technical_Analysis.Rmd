@@ -5,7 +5,8 @@ output: html_document
 ---
 1) Loading,exploring and cleaning the data
 ```{r}
-bajaj_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/BAJAJ-AUTO.NS.csv")
+Link to the Data: https://drive.google.com/file/d/1ff5_9aqcmJ6RItGcRjbjwqO7FOnoJ77-/view?usp=drive_link
+bajaj_data <- read.csv(".../BAJAJ-AUTO.NS.csv")
 dim(bajaj_data)
 str(bajaj_data)
 summary(bajaj_data)
