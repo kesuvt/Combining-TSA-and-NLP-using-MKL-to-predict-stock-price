@@ -6,12 +6,12 @@ output: html_document
 
 # Reading all the data and previous results.
 ```{r}
-# Reading time series forecasting results
-TS_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/TS_pred.csv")
-# Reading technical analysis results
-Tech_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/Tech_pred.csv")
-# Reading the original data
-bajaj_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/BAJAJ-AUTO.NS.csv")
+# Reading time series forecasting results: https://drive.google.com/file/d/1uyG8OdvDpfgkL0YB15pbhRsRbCAD0WIz/view?usp=drive_link
+TS_data <- read.csv(".../TS_pred.csv")
+# Reading technical analysis results: https://drive.google.com/file/d/1xhl8f29wx_gcQRFI0Citylg3Oug0-P-M/view?usp=drive_link
+Tech_data <- read.csv(".../Tech_pred.csv")
+# Reading the original data: https://drive.google.com/file/d/1ff5_9aqcmJ6RItGcRjbjwqO7FOnoJ77-/view?usp=drive_link
+bajaj_data <- read.csv(".../BAJAJ-AUTO.NS.csv")
 dim(bajaj_data)
 str(bajaj_data)
 summary(bajaj_data)
