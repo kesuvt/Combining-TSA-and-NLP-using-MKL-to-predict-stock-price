@@ -1,0 +1,141 @@
+---
+title: "Sentiment_Analysis"
+author: "Akshay"
+output: html_document
+---
+
+# Installing and loading required packages
+
+```{r}
+# install.packages("rvest)
+# install.packages("httr")
+# install.packages("sentimentr")
+library(rvest)
+library(httr)
+library(sentimentr)
+```
+
+
+
+
+# Function to scrape paragraphs from a URL
+```{r}
+
+scrape_paragraphs <- function(url) {
+  tryCatch({
+    webpage <- read_html(url)
+    paragraphs <- webpage %>%
+      html_nodes("p") %>%
+      html_text()
+    return(paragraphs)
+  }, error = function(e) {
+    cat("Error:", e$message, "\n")
+    return(NULL)
+  })
+}
+
+```
+
+
+# Scraping the URL's from search results page
+```{r}
+# Specify the URL of the web page
+url <- "https://www.autocarindia.com/search/reviews/bajaj"
+
+# Define a user-agent header for Edge browser
+user_agent <- "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36 Edg/96.0.1054.41"
+
+# Send a GET request with the user-agent header
+response <- httr::GET(url, add_headers("User-Agent" = user_agent))
+
+# Check if the request was successful
+if (status_code(response) == 200) {
+  # Read the HTML content
+  page <- read_html(response)
+  
+  # Extract all anchor tags within the specified class
+  links <- page %>%
+    html_nodes("a") %>%
+    html_attr("href")
+  
+  # Filter out invalid or empty links
+  links <- links[!is.na(links) & links != ""]
+  
+  # Pre-allocate list for URLs
+  url_list <- vector("list", length(links))
+  
+  # Construct absolute URLs
+  base_url <- "https://www.autocarindia.com"
+  for (i in seq_along(links)) {
+    if (!grepl("^https?://", links[i])) {
+      links[i] <- paste0(base_url, links[i])
+    }
+    url_list[[i]] <- links[i]
+  }
+  
+  # Filter URLs containing the keyword "Bajaj"
+  bajaj_urls <- list()
+  for (url in url_list) {
+    tryCatch({
+      webpage <- read_html(url)
+      content <- webpage %>%
+        html_nodes("p") %>%
+        html_text()
+      # Check if the content contains the keyword "bajaj"
+      if (any(grepl("bajaj", content, ignore.case = TRUE))) {
+        bajaj_urls <- c(bajaj_urls, list(url))
+      }
+    }, error = function(e) {
+      # Handle errors
+      cat("Error:", e$message, "\n")
+    })
+  }
+  
+
+# Scrape paragraphs from each URL
+ 
+  all_paragraphs <- list()
+  for (url in bajaj_urls) {
+    paragraphs <- scrape_paragraphs(url)
+    if (!is.null(paragraphs)) {
+      all_paragraphs <- c(all_paragraphs, list(paragraphs))
+    }
+  }
+  
+  # Print the scraped paragraphs
+  # print(all_paragraphs)
+} else {
+  cat("Failed to fetch the page. HTTP Status Code:", status_code(response), "\n")
+}
+
+all_text <- unlist(all_paragraphs)
+write.txt(all_text, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/text.txt", row.names = FALSE)
+
+all_text
+
+```
+
+
+
+# Sentiment analysis on the scrapped text data
+```{r}
+# Perform sentiment analysis
+sentiment_scores <- sentiment_by(all_text, by = NULL)
+
+# Filtering the sentiment scores
+sentiment_scores <- sentiment_scores[sentiment_scores$ave_sentiment != 0]
+
+# Exploring the results
+dim(sentiment_scores)
+names(sentiment_scores)
+str(sentiment_scores)
+summary(sentiment_scores)
+head(sentiment_scores)
+mean(sentiment_scores$ave_sentiment)
+
+
+# saving the data in csv format
+#write.csv(sentiment_scores, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/sentiment_scores.csv", row.names = FALSE)
+```
+
+

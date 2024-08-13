@@ -1,0 +1,120 @@
+---
+title: "Tech_Analysis"
+author: "Akshay"
+output: html_document
+---
+1) Loading,exploring and cleaning the data
+```{r}
+bajaj_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/BAJAJ-AUTO.NS.csv")
+dim(bajaj_data)
+str(bajaj_data)
+summary(bajaj_data)
+
+# Converting date format from character to datetime
+bajaj_data$Date <- as.Date(bajaj_data$Date, format = "%d-%m-%Y")
+
+# Checking for missing values
+sum(is.na.data.frame(bajaj_data$MACD_.1))
+# removing the rows with NA's
+bajaj_data <- bajaj_data[27:1235,1:17]
+
+# Splitting the data into Train and Test
+bajaj_test <- bajaj_data[846:1209,1:17]
+bajaj_train <- bajaj_data[1:845,1:17]
+
+```
+
+2) Simple Linear regression model
+```{r}
+# Fitting the model
+reg_model <- lm(bajaj_train$Close~bajaj_train$MA_5_.1+bajaj_train$MA_10_.1+bajaj_train$MACD_.1, data = bajaj_train)
+# Looking at the model
+summary(reg_model)
+# Predicting the price using the model on test data
+reg_pred <- predict(reg_model, newdata = bajaj_test)[1:364]
+# Plotting the model to see the fit
+plot(reg_model)
+
+# Measuring the performance of predictions
+bajaj_test$pred <- reg_pred
+bajaj_test$residual <- bajaj_test$pred - bajaj_test$Close
+print("MSE")
+(MSE <- mean(bajaj_test$residual^2))
+print("RMSE")
+(RMSE <- MSE^(1/2))
+print("normalized RMSE")
+(normalized_RMSE <- RMSE/(max(bajaj_test$pred)-min(bajaj_test$pred)))
+
+
+```
+
+3) Building a model on loop to predict one value at a time
+
+```{r}
+
+# Creating a list to append the results
+pred_price <- list()
+
+# Creating a loop
+size <- 845:1208
+for (n in size) {
+    train <- bajaj_data[1:n,1:17]
+  test <- bajaj_data[(n+1):1209,1:17]
+  reg_model_n <- lm(train$Close~train$MA_5_.1+train$MA_10_.1+train$MACD_.1, data=train)
+  reg_pred_n <- predict(reg_model_n, newdata = test)[1]
+  pred_price <- append(pred_price,reg_pred_n)
+}
+
+# Processing the list of result
+pred_price <- as.data.frame(pred_price)
+pred_price <- t(pred_price)
+
+
+# Measuring the performance
+bajaj_test_n <- bajaj_data[846:1209,1:17]
+bajaj_test_n$pred <- pred_price
+bajaj_test_n$residual <- bajaj_test_n$pred - bajaj_test_n$Close
+print("MSE_n")
+(MSE_n <- mean(bajaj_test_n$residual^2))
+print("RMSE_n")
+(RMSE_n <- MSE_n^(1/2))
+print("normalized RMSE_n")
+(normalized_RMSE_n <- RMSE_n/(max(bajaj_test_n$pred)-min(bajaj_test_n$pred)))
+
+
+# writing the final results into CSV
+write.csv(pred_price, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/Tech_pred.csv", row.names = FALSE)
+
+```
+
+4) Normalised regression model
+# This is an attempt to see if a simple linear regression model would give 
+# a better result when coerced through a log transformation.
+```{r}
+# Splitting the data into Train and Test
+bajaj_test <- bajaj_data[846:1209,1:17]
+bajaj_train <- bajaj_data[1:845,1:17]
+
+hist(bajaj_train$Close)
+hist(log(bajaj_train$Close))
+# Building the model
+reg_model <- lm(log(bajaj_train$Close)~log(bajaj_train$MA_5_.1)+log(bajaj_train$MA_10_.1), data = bajaj_train)
+summary(reg_model)
+plot(reg_model)
+reg_pred <- predict(reg_model, newdata = bajaj_test)[1:364]
+
+
+
+
+# Measuring the performance of predictions
+bajaj_test$pred <- exp(reg_pred)
+bajaj_test$residual <- bajaj_test$pred - bajaj_test$Close
+print("MSE")
+(MSE <- mean(bajaj_test$residual^2))
+print("RMSE")
+(RMSE <- MSE^(1/2))
+print("normalized RMSE")
+(normalized_RMSE <- RMSE/(max(bajaj_test$pred)-min(bajaj_test$pred)))
+
+```
+

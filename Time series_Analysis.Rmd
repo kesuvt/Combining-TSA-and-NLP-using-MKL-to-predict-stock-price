@@ -1,0 +1,149 @@
+---
+title: "Bajaj_Final"
+author: "Akshay"
+output: html_document
+---
+
+Installing and loading necessary packages
+```{r}
+# install.packages("tidyverse")
+# install.packages("e1071")
+# install.packages("forecast")
+# install.packages("ggplot2")
+library(ggplot2)
+library(tidyverse)
+library(e1071)
+library(forecast)
+```
+
+Reading, exploring and cleaning the stock price data
+```{r}
+# Reading the data
+bajaj_data <- read.csv("C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/BAJAJ-AUTO.NS.csv")
+# Exploring and understandign the data
+dim(bajaj_data)
+str(bajaj_data)
+summary(bajaj_data)
+
+# Converting date format from character to datetime
+bajaj_data$Date <- as.Date(bajaj_data$Date, format = "%d-%m-%Y")
+
+# Checking for missing values
+sum(is.na.data.frame(bajaj_data))
+# removing the rows with NA's
+bajaj_data <- bajaj_data[27:1235,1:17]
+
+# Plotting the closing price against date
+plot(bajaj_data$Date,bajaj_data$Close, type = 'l')
+
+# Splitting into train and Test based on date
+bajaj_test <- bajaj_data[846:1209,1:17]
+bajaj_train <- bajaj_data[1:845,1:17]
+```
+
+Building ARIMA model to predict the price
+```{r}
+# Creating a time series object from the training data
+train_ts <- ts(bajaj_train$Close, frequency = 1)
+# Building the model
+arima_model <- arima(train_ts, order = c(1,0,0))
+# Looking at the result
+summary(arima_model)
+# Forecasting prices
+arima_forecast <- forecast(arima_model, h = 364)
+
+# Calculating the performance by MSE, RMSE and normalized RMSE
+bajaj_test$fitted <- arima_forecast$mean
+bajaj_test$residual <- bajaj_test$fitted - bajaj_test$Close
+print("MSE")
+(MSE <- mean(bajaj_test$residual^2))
+print("RMSE")
+(RMSE <- MSE^(1/2))
+print("normalized RMSE")
+(normalized_RMSE <- RMSE/(max(bajaj_test$fitted)-min(bajaj_test$fitted)))
+
+```
+
+Plotting the result
+
+```{r}
+# Create the plot
+plot_data <- data.frame(Time_Period = bajaj_test$Date, Actuals = bajaj_test$Close, Forecast = bajaj_test$fitted)
+ggplot(data = plot_data, aes(x = Time_Period)) +
+  geom_line(aes(y = Actuals), color = "blue", linetype = "solid") +
+  geom_line(aes(y = Forecast), color = "red", linetype = "solid") +
+  labs(x = "Time Period", y = "Price", title = "TSF Model") +
+  theme_minimal()
+
+# Display the plot
+print(plot)
+
+```
+
+
+
+
+Constructing a loop to predict one price at a time.
+```{r}
+# Creating an empty list to append the results
+predicted_price <- list()
+
+# Creating the loop
+size <- 846:1209
+for (n in size) {
+  train <- bajaj_data[1:n,1:17]
+  train_n <- ts(train$Close, frequency = 1)
+  arima_model_n <- auto.arima(train_n)
+  arima_forecast_n <- forecast(arima_model_n, h = 1)
+  predicted_price <- append(predicted_price,arima_forecast_n$mean)
+}
+
+# Converting the list of results into a data frame and transposing it to align it with the rest of the data
+predicted_price <- as.data.frame(predicted_price)
+predicted_price <- t(predicted_price)
+
+
+```
+
+Measuring the performance of the new predictions
+```{r}
+
+bajaj_test_n <- bajaj_data[846:1209,1:17]
+bajaj_test_n$pred <- predicted_price
+bajaj_test_n$residual <- bajaj_test_n$pred - bajaj_test_n$Close
+print("MSE_n")
+(MSE_n <- mean(bajaj_test_n$residual^2))
+print("RMSE_n")
+(RMSE_n <- MSE_n^(1/2))
+print("normalized RMSE_n")
+(normalized_RMSE_n <- RMSE_n/(max(bajaj_test_n$pred)-min(bajaj_test_n$pred)))
+```
+
+Plotting the results
+
+```{r}
+# Create the plot
+plot_data_1 <- data.frame(Time_Period = bajaj_test_n$Date, Actuals = bajaj_test_n$Close, Forecast = bajaj_test_n$pred)
+ggplot(data = plot_data_1, aes(x = Time_Period)) +
+  geom_line(aes(y = Actuals), color = "blue", linetype = "solid") +
+  geom_line(aes(y = Forecast), color = "red", linetype = "solid") +
+  labs(x = "Time Period", y = "Price", title = "TSF Model on Loop") +
+  theme_minimal()
+
+# Display the plot
+print(plot)
+
+
+```
+
+
+
+
+
+
+
+```{r}
+# Writing the final results
+write.csv(predicted_price, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/TS_pred.csv", row.names = FALSE)
+
+```
