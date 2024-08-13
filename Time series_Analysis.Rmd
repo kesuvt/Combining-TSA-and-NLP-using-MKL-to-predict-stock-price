@@ -145,6 +145,7 @@ print(plot)
 
 ```{r}
 # Writing the final results
-write.csv(predicted_price, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/TS_pred.csv", row.names = FALSE)
+write.csv(predicted_price, ".../TS_pred.csv", row.names = FALSE)
+# Link to the predicted dataset: https://drive.google.com/file/d/1uyG8OdvDpfgkL0YB15pbhRsRbCAD0WIz/view?usp=drive_link
 
 ```
