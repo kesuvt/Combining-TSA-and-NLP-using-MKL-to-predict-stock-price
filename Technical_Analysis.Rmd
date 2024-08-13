@@ -84,7 +84,8 @@ print("normalized RMSE_n")
 
 
 # writing the final results into CSV
-write.csv(pred_price, "C:/Users/akvt5/OneDrive/Documents/Academics/UU Course Docs/Semester 3/Data/Tech_pred.csv", row.names = FALSE)
+write.csv(pred_price, ".../Tech_pred.csv", row.names = FALSE)
+# Link to the predicted data: https://drive.google.com/file/d/1xhl8f29wx_gcQRFI0Citylg3Oug0-P-M/view?usp=drive_link
 
 ```
 
